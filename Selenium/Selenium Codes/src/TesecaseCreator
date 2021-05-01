@@ -1,0 +1,166 @@
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+
+public class TestCase {
+	
+	public static int xlRows;
+	public static int xlCols;
+	public static String[][] xData;
+	public static String[][] xData1;
+	public static int k=0;
+	public static int totalrows;
+
+	public static void main(String[] args) throws Exception {
+		xlRead("H:\\TestCaseCreator\\TestCasesX.xls");
+		Thread.sleep(2000);
+		int totalrows=xlRows*8;
+		xData1 = new String[totalrows][5];
+		System.out.println("Data Processing started");
+		for (int i = 1; i < xlRows; i++) 
+		{
+			
+			
+			
+			String ScreenName=xData[i][1];
+			String AttributeName=xData[i][2];
+			String AttributeScreenName=xData[i][3];
+			String AttributeValue = xData[i][4];
+			String OmniScreen=xData[i][5];
+			String OmniValue=xData[i][6];
+			
+			
+			
+			xData1[k][0]="SetIT_Plan_Install_Regression_TC0"+i+"";
+			xData1[k][1]="Pre Requisite:- 1.Plan Should be Push 3 Completed \n Objective:- Validate "+AttributeName+" from SetIT is Updating In Omni through Plan Install";
+			xData1[k][2]="Step 1";
+			xData1[k][3]="Login to SetIT UI - https://setit.intg.voya.net/isetitui/do/login";
+			xData1[k][4]="User Should be logged in to SetIT UI";
+			
+			k=k+1;
+			xData1[k][2]="Step 2";
+			xData1[k][3]="Choose client as POPBUY and workorder as OTHERLMPTest";
+			xData1[k][4]="Client and Workorder should be selected";
+			
+			k=k+1;
+			xData1[k][2]="Step 3";
+			xData1[k][3]="Navigate to Plan Install / "+ScreenName+"";
+			xData1[k][4]=""+ScreenName+" Page should be displayed";
+			
+			k=k+1;
+			xData1[k][2]="Step 4";
+			xData1[k][3]="Update "+AttributeScreenName+" ("+AttributeName+") as "+AttributeValue+"";
+			xData1[k][4]="Field Should be updated";
+			
+			k=k+1;
+			xData1[k][2]="Step 5";
+			xData1[k][3]="Perform Push 4 for the Plan";
+			xData1[k][4]="Push 4 should be Completed";
+			
+			k=k+1;
+			xData1[k][2]="Step 6";
+			xData1[k][3]="Login to Adminweb";
+			xData1[k][4]="User Should be logged in to Adminweb";
+			
+			k=k+1;
+			xData1[k][2]="Step 7";
+			xData1[k][3]="Navigate to "+OmniScreen+"";
+			xData1[k][4]=""+OmniScreen+" should be displayed";
+			
+			k=k+1;
+			xData1[k][2]="Step 8";
+			xData1[k][3]="Validate "+OmniValue+" is updated with "+AttributeValue+"";
+			xData1[k][4]=""+AttributeValue+" should be updated";
+			k=k+1;
+			
+		}
+		System.out.println("Data Processing Compeleted");;
+		xlwrite("H:\\TestCaseCreator\\NewTestCasesX.xls", xData1);
+		int TotalTC=xlRows-1;
+		System.out.println(""+TotalTC+" Testcases Created");
+		
+	}
+
+	public static void xlRead(String sPath) throws Exception {
+		System.out.println("Data Read Started");
+		File myFile = new File(sPath);
+		FileInputStream myStream = new FileInputStream(myFile);
+		HSSFWorkbook myworkbook = new HSSFWorkbook(myStream);
+		HSSFSheet mySheet = myworkbook.getSheetAt(0);
+		xlRows = mySheet.getLastRowNum() + 1;
+		xlCols = mySheet.getRow(0).getLastCellNum();
+		xData = new String[xlRows][xlCols];
+		for (int i = 0; i < xlRows; i++) {
+			HSSFRow row = mySheet.getRow(i);
+			for (short j = 0; j < xlCols; j++) {
+				HSSFCell cell = row.getCell(j);
+				String value = cellToString(cell);
+				xData[i][j] = value;
+				
+				//System.out.print("-" + xData[i][j]);
+			}
+			
+			//System.out.println();
+		}
+		System.out.println("Data Read Completed");
+	}
+
+	public static String cellToString(HSSFCell cell) {
+		int type = cell.getCellType();
+		Object result;
+		switch (type) {
+		case HSSFCell.CELL_TYPE_NUMERIC:
+			result = cell.getNumericCellValue();
+			break;
+		case HSSFCell.CELL_TYPE_STRING:
+			result = cell.getStringCellValue();
+			break;
+		case HSSFCell.CELL_TYPE_FORMULA:
+			throw new RuntimeException("We cannot evaluate formula");
+		case HSSFCell.CELL_TYPE_BLANK:
+			result = "-";
+		case HSSFCell.CELL_TYPE_BOOLEAN:
+			result = cell.getBooleanCellValue();
+		case HSSFCell.CELL_TYPE_ERROR:
+			result = "This cell has some error";
+		default:
+			throw new RuntimeException("We do not support this cell type");
+		}
+		return result.toString();
+
+	}
+
+	public static void xlwrite(String xlpath1, String[][] xData) throws Exception {
+		System.out.println("Excel Write Started");
+		File myFile1 = new File(xlpath1);
+		FileOutputStream fout = new FileOutputStream(myFile1);
+		HSSFWorkbook wb = new HSSFWorkbook();
+		HSSFSheet mySheet1 = wb.createSheet("NewTestCases");
+		int totalrows=xlRows*8;
+		for (int i = 0; i < totalrows ; i++) {
+			
+			HSSFRow row1 = mySheet1.createRow(i);
+			for (short j = 0; j < 5; j++) {
+				HSSFCell cell1 = row1.createCell(j);
+				cell1.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell1.setCellValue(xData[i][j]);
+			}
+		}
+		
+		wb.write(fout);
+		fout.flush();
+		fout.close();
+		System.out.println("Excel Write Completed");
+	}
+	}
+
+
+
+
+
+
